@@ -1,0 +1,1 @@
+[{"id":"tab_1481617454872_1","name":"super_new","condition":{},"showFields":["appName","chain","envInfo","level"],"sort":{"field":"@timestamp","type":"desc"},"allFields":["appName","chain","envInfo","filePath","hostName","level","message","topic","type"],"_user":"super","oldName":"新建查询"}]

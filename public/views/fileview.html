@@ -1,0 +1,135 @@
+<div ng-controller="FileviewController">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-solid no-margin">
+                <div class="box-header with-border">
+                    <h3 class="box-title">文件视图
+                        <small>以文件方式查看日志</small>
+                    </h3>
+                </div>
+                <div class="box-body">
+                    <div class="row"  style="padding-left: 20px;">
+                        <!--<div class="col-md-3">-->
+                        <!--<div class="input-group">-->
+                        <!--<span class="input-group-addon">-->
+                        <!--<b>hostName<span style="color: #f00;">*</span></b>-->
+                        <!--</span>-->
+                        <!--<input type="text" id="hostName" class="form-control select2"-->
+                        <!--/>-->
+                        <!--</div>-->
+                        <!--</div>-->
+
+                        <div class="col-md-4">
+                            <div class="input-group ">
+                                <span class="input-group-addon">
+                                    <b>envInfo<span style="color: #f00;">*</span></b>
+                                </span>
+                                <input type="text" placeholder="例:func92"
+                                       class="form-control" id="envInfo">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <b>appName<span style="color: #f00;">*</span></b>
+                                </span>
+                                <input type="text" placeholder="例:ues-ws" class="form-control" id="appName">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4" >
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <b>filePath<span style="color: #f00;">*</span></b>
+                                </span>
+                                <input type="text" placeholder="例:/opt/logs/loan/loan/web-other.log"
+                                       class="form-control" id="filePath">
+                            </div>
+                        </div>
+
+                    </div>
+                    <p style="height: 10px;"></p>
+
+                    <div class="row" style="padding-left: 20px;">
+                        <div class="col-md-12">
+                            <div style="width:210px;display: inline-block">
+                                <div class='input-group date' my-date-time="{linkSelector:'#endDate'}">
+                                    <input type='text' class="form-control " ng-model="startDate"/>
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span><span style="color: #f00;">*</span>
+                            </span>
+                                </div>
+                            </div>
+                            <div style="position:relative;top:-10px; display: inline-block;">
+                                &nbsp;-&nbsp;
+                            </div>
+
+                            <div style="width:210px;display: inline-block">
+                                <div class='input-group date' my-date-time id="endDate">
+                                    <input type='text' class="form-control  " ng-model="endDate"/>
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span><span style="color: #f00;">*</span>
+                            </span>
+                                </div>
+                            </div>
+                            &nbsp;&nbsp;
+                            <div style="width: 400px;display: inline-block;">
+                                <div class="input-group">
+                                <span class="input-group-addon">
+                                    <b>筛选</b>
+                                </span>
+                                    <input type="text" name="table_search" class="form-control" ng-model="message"
+                                           placeholder="见搜索页message字段说明,支持() AND OR NOT ? * + -">
+                                </div>
+                            </div>
+                            <div style="width: 80px; display: inline-block;position: relative;top:-14px;">
+                                &nbsp;&nbsp;
+                                <button class="btn  btn-success" ng-click="search();">查询</button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 ">
+            <div class="box box-primary no-margin">
+                <div class="box-header with-border">
+                    <h3 class="box-title">当前:{{hits.hits.length || 0}}/<b>{{hits.total||0}}</b>
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 ">
+            <div class="box  no-border">
+                <div class="box-body no-padding">
+                    <table class="table table-bordered table-hover table-striped kbn-table"
+                           style="margin: 0 !important;">
+                        <tbody>
+                        <tr ng-repeat="rcd in hits.hits track by $index">
+                            <td ng-class="rcd.id === selectedId ? 'mark' : ''" ng-bind-html="escapeHtml(rcd.message)">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="overlay" ng-show="searching">
+                    <i class="fa fa-spinner fa-spin"></i>
+                </div>
+                <div class="box no-border no-shadow" style="height: 42px;" ng-show="!searching && hasMoreHits">
+                    <div class="overlay">
+                        <i class="fa fa-spinner fa-spin"></i>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

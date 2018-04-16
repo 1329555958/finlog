@@ -1,0 +1,193 @@
+<div ng-controller="logqryTabController">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="input-group margin-bottom-10" ng-repeat="cond in addedConds">
+                <div class="input-group-btn">
+                    <select class="form-control" ng-model="addedConds[$index]">
+                        <option class="ng-hide" value="{{maxLengthField }}">{{maxLengthField}}
+                        </option>
+                        <option value="{{field}}" ng-selected="cond === field"
+                                ng-repeat="field in getReminderFields(addedConds[$index])">
+                            {{field}}
+                        </option>
+                    </select>
+                </div>
+                <input ng-show="currentSelectFiled !== cond" ng-focus="showSelect(cond);" type="text"
+                       class="form-control" ng-model="condition[cond]" ng-change="delaySearch();">
+                                    <span ng-show="currentSelectFiled !== cond" class="input-group-addon no-border"><i
+                                            class="fa fa-trash chart-icon" ng-click="removeCond($index);"></i></span>
+                <input ng-if="isSelectField(cond)" type="text" class="form-control" id="{{cond+ID_SUFFIX}}"
+                       ng-show="currentSelectFiled === cond">
+            </div>
+            <div>
+                <button class="btn btn-plain" ng-click="addCondition();" ng-show="hasCond">
+                    <i
+                            class="fa fa-plus-circle"></i>添加查询条件
+                </button>
+                <span ng-show="!hasCond">当前无条件可添加</span>
+                <label style="font-weight: normal;">
+                    <input type="checkbox" ng-model="conditonChangeToSearch">条件改变时自动查询
+                </label>
+                &nbsp;&nbsp;
+                <button class="btn btn-plain" style="color: red;" ng-click="showConditionExplain=!showConditionExplain">
+                    <i class="fa fa-question-circle hover-icon" ></i>搜索条件说明
+                </button>
+
+
+
+            </div>
+            <div class="height-animate animate-container" ng-style="{height:showConditionExplain?'301px':0}">
+                <div class="alert alert-info  alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true"
+                            ng-click="showConditionExplain=false">×
+                    </button>
+                    <h4><i class="icon fa fa-info"></i> 查询条件填写说明</h4>
+
+                    <ol>
+                        <li>字段message支持() AND OR NOT ? * + -
+                            <ol>
+                                <li>例:<code>a AND (b OR c*) NOT d? +e -f</code></li>
+                                <li>():表达式分组</li>
+                                <li>+: 包含</li>
+                                <li>-: 排除</li>
+                                <li>AND:逻辑与</li>
+                                <li>OR:逻辑或</li>
+                                <li>NOT:非(即不包含)</li>
+                                <li>?:匹配单个字符</li>
+                                <li>*:匹配0个或多个字符</li>
+                            </ol>
+                        </li>
+                        <li>其余字段仅支持单词查询</li>
+                    </ol>
+                </div>
+
+            </div>
+        </div>
+        <div class="col-md-6">
+            <button class="btn btn-success" ng-click="search(null,null,true);">查询</button>
+            <button class="btn btn-default" ng-click="reset();">重置</button>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 5px;">
+        <div class="col-md-12">
+            <div class="am-charts height-animate" ng-style="{height:hideChart?0:''}" am-chart="{graph:{fillAlphas:0.5}}"
+                 chart-data="hits.aggs"></div>
+        </div>
+        <div class="width-animate" ng-class="{'col-md-9':showEdit,'col-md-12':!showEdit}">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">
+                        <small>当前:</small>
+                        {{hits.hits.length || 0}}/<b>{{hits.total||0}}</b>
+                    </h3>
+
+                    <div class="box-tools ">
+                        <i class="fa  hover-icon fa-file-text-o data-tip" data-tip="文本方式查看"
+                           ng-click="showAsFileText();"></i>
+                        &nbsp;&nbsp;
+                        <i class="fa  hover-icon data-tip" data-tip="最大化"
+                           ng-class="{true:'fa-expand',false:'fa-compress'}[!hideChart]"
+                           ng-click="hideChart=!hideChart"></i>
+                        &nbsp;&nbsp;
+                        <i class="fa  fa-cog large-x hover-icon data-tip" data-tip="编辑显示字段"
+                           ng-click="showEdit=true;"></i>
+                    </div>
+                </div>
+                <div class="box-body no-padding">
+                    <table class="table table-bordered table-hover table-striped dataTable kbn-table"
+                           style="margin: 0 !important;">
+                        <thead>
+                        <tr>
+                            <th style="width: 10px;"></th>
+                            <th ng-class="sort.field==='@timestamp'?('sorting_'+sort.type):'sorting'"
+                                style="width:160px;" ng-click="changeSort('@timestamp');">Time
+                            </th>
+                            <th ng-class="getSortClass(field)"
+                                ng-repeat="field in getShowFields()" ng-click="changeSort(field);">{{field}}
+                            </th>
+                        </tr>
+                        </thead>
+                        <tr ng-repeat-start="rcd in hits.hits"
+                            ng-click="showRecordDetail[rcd['_id']]=!showRecordDetail[rcd['_id']]"
+                            style="cursor: pointer;">
+                            <td rowspan="2"><i
+                                    class="fa large-x hover-icon"
+                                    ng-class="{'fa-caret-down':showRecordDetail[rcd['_id']],'fa-caret-right':!showRecordDetail[rcd['_id']]}"></i>
+
+                            </td>
+                            <td>{{rcd['_source']['@timestamp']}}</td>
+                            <td ng-repeat="field in getShowFields()" ng-bind-html="getFieldData(field, rcd)">
+                            </td>
+                        </tr>
+                        <tr ng-if="!showRecordDetail[rcd['_id']]">
+                            <td colspan="{{getShowFields().length+1}}">
+                                <a target="_blank" ng-href="#{{showInFileUrl(rcd)}}"><i
+                                        class="fa fa-external-link hover-icon data-tip"
+                                        data-tip="上下文"></i></a>
+                                <span class="value-text"
+                                      ng-bind-html="getFieldData('message', rcd)"></span>
+                            </td>
+                        </tr>
+                        <tr ng-repeat-end="" ng-if="showRecordDetail[rcd['_id']]">
+                            <td colspan="{{getShowFields().length+2}}" class="no-padding">
+                                <div class="t1-{{rcd['_id']}}">
+                                    <table class="table kbn-table">
+                                        <tbody>
+                                        <tr ng-repeat="(key,val) in rcd['_source']">
+                                            <td style="width: 140px;">{{key}}</td>
+                                            <td ng-bind-html="$root.escapeHtml($root.JSONStringify(val))"
+                                                class="value-text"></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+
+                    </table>
+                </div>
+                <div class="overlay" ng-show="searching">
+                    <i class="fa fa-spinner fa-spin"></i>
+                </div>
+                <div class="box no-border no-shadow" style="height: 42px;" ng-show="!searching && hasMoreHits">
+                    <div class="overlay">
+                        <i class="fa fa-spinner fa-spin"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="width-animate pull-right" ng-class="{'col-md-3':showEdit,'width-0':!showEdit}">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">编辑显示字段</h3>
+
+                    <div class="box-tools">
+                        <i class="fa fa-remove hover-icon" ng-click="showEdit=false;"></i>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <strong><i class="fa fa-check color-success"></i>&nbsp;已选字段</strong>
+                    <table class="table no-border table-hover mini-h">
+                        <tr ng-repeat="f in getShowFields()">
+                            <td class="hover-show-i">
+                                <span class="text-muted">{{f}}</span>
+                                <i class="fa-minus fa hover-icon pull-right" ng-click="removeShowField(f);"></i>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="box-body">
+                    <strong><i class="fa fa-circle-o color-success"></i>&nbsp;可选字段</strong>
+                    <table class="table no-border table-hover mini-h">
+                        <tr ng-repeat="f in getHidenFields()">
+                            <td class="hover-show-i">
+                                <span class="text-muted">{{f}}</span>
+                                <i class="fa-plus fa hover-icon pull-right" ng-click="addShowField(f);"></i>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>FinLog</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="/bower_components/AdminLTE/bootstrap/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/bower_components/seiyria-bootstrap-slider/dist/css/bootstrap-slider.min.css"/>
+    <link rel="stylesheet" href="/bower_components/font-awesome/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="/bower_components/AdminLTE/dist/css/AdminLTE.min.css"/>
+    <link rel="stylesheet" href="/bower_components/AdminLTE/dist/css/skins/skin-blue.min.css"/>
+    <link rel="stylesheet" href="/bower_components/AdminLTE/plugins/datatables/dataTables.bootstrap.css"/>
+    <!--<link rel="stylesheet" href="/bower_components/gridster/dist/jquery.gridster.min.css">-->
+    <link rel="stylesheet"
+          href="/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datepicker3.standalone.min.css"/>
+    <link rel="stylesheet"
+          href="/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css"/>
+    <link rel="stylesheet" href="/public/css/hack.css"/>
+    <link rel="stylesheet" href="/public/css/select2.css"/>
+    <link rel="stylesheet" href="/public/css/select2-bootstrap.css"/>
+    <link rel="shortcut icon" href="/public/imgs/favicon.ico"
+          type="image/x-icon"/>
+    <script type="text/javascript">
+        //index 下使用了压缩文件
+        window.UGLIFY = !window.location.pathname.indexOf('/index');
+    </script>
+    <script type="text/javascript" src="/public/lib/js/require.min.js"></script>
+    <script type="text/javascript" src="/public/lib/js/require-config.js"></script>
+    <script type="text/javascript" src="/public/js/app.js"></script>
+
+</head>
+<body class="skin-blue sidebar-none fixed" ng-controller="rootController">
+
+<header class="main-header">
+    <a href="#/" class="logo">
+        <img src="/public/imgs/favicon.ico" style="padding-bottom: 5px;"> FinLog
+    </a>
+    <nav class="navbar navbar-static-top" role="navigation">
+        <!-- 菜单 -->
+        <ul class="nav navbar-nav">
+            <li class="dropdown messages-menu ">
+                <a href="#/logqry">搜索</a>
+            </li>
+            <li class="dropdown messages-menu ">
+                <a href="#/fileview">文件</a>
+            </li>
+            <!--<li class="dropdown messages-menu ">-->
+            <!--<a href="#/trace">追踪</a>-->
+            <!--</li>-->
+            <li class="dropdown messages-menu ">
+                <a href="#/dashboard">仪表盘</a>
+            </li>
+            <li class="dropdown messages-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">告警<span
+                        class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <ul class="menu">
+                            <li>
+                                <a href="#/warnrule">规则设置</a>
+                            </li>
+                            <li>
+                                <a href="#/warnerrdetail">告警详情</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+
+
+        <div class="navbar-custom-menu">
+            <ul class="nav navbar-nav">
+                <li class="dropdown user user-menu"><a href="#" class="dropdown-toggle" data-toggle="dropdown"><img
+                        src="/public/imgs/user2-160x160.jpg" class="user-image" alt="User Image"> <span>{{user.loginName}}</span></a>
+                    <ul class="dropdown-menu">
+                        <li class="user-header"><img src="/public/imgs/user2-160x160.jpg" class="img-circle"
+                                                     alt="User Image">
+
+                            <p class="ng-binding">{{user.loginName}}</p></li>
+                        <li class="user-footer">
+                            <!--href="{{user.logout_url}}" 后端访问不了退出地址-->
+                            <div class="pull-right"><a href="/logout"
+                                                       class="btn btn-danger btn-flat"><i
+                                    class="fa fa-sign-out"></i>退出</a></div>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div class="navbar-custom-menu">
+            <ul class="nav navbar-nav ng-hide" ng-controller="conditionController"
+                ng-hide="!show_condition_area">
+                <li class="dropdown messages-menu">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" ng-click="showSlotDlg=false">
+                        <span ng-bind="condition_display.timeSlot"></span><span class="caret"></span>&nbsp;&nbsp;&nbsp;
+                        <span class="label label-danger">时间</span>
+                    </a>
+
+                    <div class="dropdown-menu">
+                        <div class="time-slot">
+                            <button class="btn btn-primary" ng-class="{primary:isActiveTimeSlot(t)}"
+                                    ng-repeat="t in timeSlots" ng-click="changeTimeSlot(t);">
+                                {{t.display}}
+                            </button>
+                            <button class="btn btn-primary" ng-class="{primary:customTimeSlotActive}"
+                                    style="margin-left:0px;" onclick="StopPropagation(event);"
+                                    ng-click="showSlotDlg=true">
+                                自定义
+                            </button>
+                        </div>
+                        <div class="box box-primary " style="margin-bottom: 0px;"
+                             ng-hide="!customTimeSlotActive && !showSlotDlg">
+                            <div class="box-body" onclick="StopPropagation(event);">
+                                <div my-calendar ng-model="customTimeSlot.startTime" data-cfg="calendarCfg"
+                                     class="border clearfix"
+                                     style="width: 228px;display: inline-block; float: left"></div>
+                                <div style="height: 248px;margin-left: 238px;">
+                                    <div style="height: 120px;margin-bottom: 8px;padding: 35px 20px;"
+                                         class="border">
+                                        <p>请选择{{customTimeSlot.startTime}}的起始时间: &nbsp;{{customTimeSlot.hour}}:00</p>
+
+                                        <div><input my-slider type="text" data-opts="sliderOpts" style="width: 100%;"
+                                                    ng-model="customTimeSlot.hour"/></div>
+                                    </div>
+                                    <div style="height: 120px;padding: 35px 20px;" class="border">
+                                        <p>请选择 {{customTimeSlot.startTime}}&nbsp;{{customTimeSlot.hour}}:00 向后的时间跨度</p>
+
+                                        <div>
+                                            <select class="form-control" style="width: 120px;"
+                                                    ng-model="customTimeSlot.slot"
+                                                    ng-change="onTimeSlotChange();">
+                                                <option ng-repeat="t in timeSlots" value="{{t.value+':'+t.unit}}"
+                                                        ng-hide="$index >= slotThreshold"
+                                                        ng-selected="(t.value+':'+t.unit)===customTimeSlot.slot">
+                                                    {{t.display}}
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="box-footer">
+                                <div class="pull-right"><span>查询&nbsp;{{customTimeSlot.startTime}}&nbsp;{{customTimeSlot.hour}}:00&nbsp;至&nbsp;{{customTimeSlot.endTime}}&nbsp;内的性能数据</span>&nbsp;
+                                    <button class="btn btn-success" ng-click="changeCustomTimeSlot();">确定</button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+
+</header>
+
+<div class="content-wrapper">
+    <div class="content body">
+        <div ui-view></div>
+    </div>
+</div>
+<!--style="background: rgba(0,0,0,0);"-->
+<div id="infodialog" class="modal" >
+    <div class="modal-dialog" style="text-align: center;">
+        <div class="box box-warning" style="display: inline-block;width: auto;min-width: 300px;text-align: left;">
+            <div class="box-header with-border"><h3 class="box-title">提示</h3>
+
+                <div class="box-tools">
+                    <button class="btn btn-box-tool" onclick="infoDlgHide();"><i class="fa fa-times"></i></button>
+                </div>
+            </div>
+            <div class="box-body" id="infomsg" style="font-weight:bold;"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

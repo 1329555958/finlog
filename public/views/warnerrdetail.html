@@ -1,0 +1,72 @@
+<div ng-controller="warnerrdetailController">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-solid">
+                <div class="box-header with-border">
+                    <h3 class="box-title">告警
+                        <small>告警详情</small>
+                    </h3>
+                </div>
+                <div class="box-body">
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <input type="text" name="table_search" class="form-control input-sm" ng-model="name"
+                                   placeholder="名称">
+
+                            <div class="input-group-btn">
+                                <button class="btn btn-sm btn-success" ng-click="searchByCondition();"><i
+                                        class="fa fa-search"></i></button>
+                                &nbsp;&nbsp;
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class='input-group date' my-date-time="{linkSelector:'#endDate'}">
+                            <input type='text' class="form-control input-sm" ng-model="startDate"/>
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-1" style="width: 20px;text-align: center;padding: 5px 0;">
+                        &nbsp;至&nbsp;
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class='input-group date' my-date-time id="endDate">
+                            <input type='text' class="form-control input-sm" ng-model="endDate"/>
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <table class="table table-hover table-striped">
+                        <tbody>
+                        <tr>
+                            <th>名称</th>
+                            <th>描述</th>
+                            <th>内容</th>
+                            <th>实际值</th>
+                            <th>时间</th>
+                        </tr>
+                        <tr ng-repeat="warnErrorInfo in warnErrorInfos">
+                            <td>{{warnErrorInfo.warnRuleName}}</td>
+                            <td>{{warnErrorInfo.warnRuleDescription}}</td>
+                            <td>{{warnErrorInfo.rule}}</td>
+                            <td>{{warnErrorInfo.autualValue}}</td>
+                            <td>{{warnErrorInfo.createTime}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="box-footer" ng-show="page.totalPage > 1">
+                    <pagination current-page="currentPage" total-page="page.totalPage"
+                                on-select-page="queryByPage(page);"></pagination>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

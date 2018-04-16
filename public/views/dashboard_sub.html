@@ -1,0 +1,125 @@
+<div ng-controller="dashboardSubController">
+    <!--<div class="gridster" style="display: none;">-->
+        <!--<ul>-->
+            <!--<li style="background-color: #00A000;" data-row="1" data-col="1" data-sizex="2" data-sizey="2">-->
+                <!--sdfsd-->
+            <!--</li>-->
+            <!--<li style="background-color: #00a7d0;" data-row="1" data-col="2" data-sizex="1" data-sizey="1">-->
+                <!--sdfsd-->
+            <!--</li>-->
+            <!--<li style="background-color: #00a65a;" data-row="1" data-col="3" data-sizex="1" data-sizey="1">-->
+                <!--sdfsd-->
+            <!--</li>-->
+            <!--<li style="background-color: #00A000;" data-row="1" data-col="4" data-sizex="1" data-sizey="1">-->
+                <!--sdfsd-->
+            <!--</li>-->
+            <!--<li style="background-color: #00a7d0;" data-row="2" data-col="5" data-sizex="1" data-sizey="1">-->
+                <!--sdfsd-->
+            <!--</li>-->
+            <!--<li style="background-color: #00a65a;" data-row="2" data-col="4" data-sizex="1" data-sizey="1">-->
+                <!--sdfsd-->
+            <!--</li>-->
+        <!--</ul>-->
+    <!--</div>-->
+
+    <div class="row">
+        <div class="col-md-12" style="margin-bottom: 10px;">
+            <button class="btn btn-success" ng-click="showAdd();">添加图表</button>
+            <button class="btn btn-warning" ng-click="reopenClosedChart();">重新打开已关闭的图表</button>
+        </div>
+    </div>
+    <div class="row ">
+        <div class="col-md-4 grid" ng-repeat="chart in defaultCharts" ng-show="!closedChart[chart.id]">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title" ng-if="chart.chartType == 'countByField'">基于<select ng-model="chart.type"
+                                                                                              ng-change="refreshDefaultChart(chart)">
+                        <option ng-repeat="field in allFields" ng-selected="chart.type==field">{{field}}</option>
+                    </select>的统计图表
+                    </h3>
+                    <h3 class="box-title" ng-if="chart.chartType == 'dateHistogram'">每<select
+                            ng-model="chart.timeslotUnit"
+                            ng-init="chart.timeslotUnit=chart.timeslotUnit||getTimeslotUnit()"
+                            ng-change="refreshCustomChart(chart)">
+                        <option ng-repeat="i in timeIntervals" value="{{i.value}}"
+                                ng-selected="isSameTimeslotUnit(chart.timeslotUnit,i.value)">{{i.name}}
+                        </option>
+                    </select>的日志总数
+                    </h3>
+                    <div class="box-tools">
+                        <i class="fa fa-refresh large hover-icon" title="刷新"
+                           ng-click="refreshDefaultChart(chart)"></i>
+                        &nbsp;&nbsp;
+                        <i class="fa fa-remove large hover-icon" title="关闭"
+                           ng-click="chartVisible(chart.id,false);"></i>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div class="am-charts" am-chart="" chart-data="this[chart.id]"></div>
+                </div>
+                <div class="overlay" ng-show="loading[chart.id]">
+                    <i class="fa fa-spinner fa-spin"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 grid" ng-repeat="chart in customCharts" ng-show="!closedChart[chart.id]">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">每<select ng-model="chart.timeslotUnit"
+                                                   ng-change="refreshCustomChart(chart)">
+                        <option ng-repeat="i in timeIntervals" value="{{i.value}}"
+                                ng-selected="isSameTimeslotUnit(chart.timeslotUnit,i.value)">{{i.name}}
+                        </option>
+                    </select>的日志总数,基于查询:<a href="#/logqry?tabId={{chart.qryId}}"
+                                           class="color-success">{{chart.qryName}}</a>
+                    </h3>
+                    <div class="box-tools">
+                        <i class="fa fa-refresh large hover-icon" title="刷新"
+                           ng-click="refreshCustomChart(chart)"></i>
+                        &nbsp;&nbsp;
+                        <i class="fa fa-trash large hover-icon" title="删除"
+                           ng-click="closeCustomChart(chart.id,true);"></i>
+                        &nbsp;&nbsp;
+                        <i class="fa fa-remove large hover-icon" title="关闭"
+                           ng-click="closeCustomChart(chart.id,false);"></i>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div class="am-charts" am-chart=""
+                         chart-data="this[chart.id]"></div>
+                </div>
+                <div class="overlay" ng-show="loading[chart.id]">
+                    <i class="fa fa-spinner fa-spin"></i>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="modal" id="addDialog">
+        <div class="modal-dialog" style="width: 600px;">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">添加基于查询的图表 <a href="#/logqry" ><small class="color-info">去创建新的查询</small></a></h3>
+
+                    <div class="box-tools pull-right">
+                        <button class="btn btn-box-tool">
+                            <i class="fa fa-remove large"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div class="form-group">
+                        <select class="form-control" ng-model="selectedQry">
+                            <option ng-repeat="o in customQrys" value="{{o.id}}">{{o.name}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="box-footer">
+                    <button class="btn btn-success pull-right" ng-click="addCustomChart();">
+                        确定
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

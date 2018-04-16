@@ -1,0 +1,203 @@
+<div class="row" ng-controller="warnruleController">
+    <div class="width-animate" ng-class="{'col-md-9':showEdit,'col-md-12':!showEdit}">
+        <div class="box box-solid ">
+
+            <div class="box-header with-border">
+                <h3 class="box-title">告警
+                    <small>规则设置</small>
+                </h3>
+
+            </div>
+            <div class="box-body">
+                <div style="width:300px;">
+                    <div class="input-group">
+                        <input type="text" name="table_search" class="form-control input-sm" placeholder="名称"
+                               ng-model="condition">
+
+                        <div class="input-group-btn">
+                            <button class="btn btn-sm btn-success" ng-click="searchByCondition();"><i
+                                    class="fa fa-search"></i></button>
+                            &nbsp;&nbsp;
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tools">
+                    <button class="btn btn-sm btn-success" ng-click="add();"><i class="fa fa-plus"></i>&nbsp;&nbsp;添加告警
+                    </button>
+                </div>
+
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+                <table class="table table-hover table-striped">
+                    <tbody>
+                    <tr>
+                        <th>编号</th>
+                        <th>名称</th>
+                        <th>描述</th>
+                        <th>更新时间</th>
+                        <th>频率</th>
+                        <th>状态</th>
+                        <th>告警</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr ng-repeat="warnRule in warnRules track by $index">
+                        <td>{{ $index + 1 }}</td>
+                        <td>{{ warnRule.name }}</td>
+                        <td>{{ warnRule.description }}</td>
+                        <td >{{warnRule.createTime|date:'yyyy-MM-dd HH:mm:ss'}}</td>
+                        <td>{{ warnRule.frequency }}{{ warnRule.frequencyUnit }}</td>
+                        <!--<td>{{ warnRule.status }}</td>-->
+                        <td ng-show="warnRule.disabled" style="color: red">无效</td>
+                        <td ng-show="!warnRule.disabled" style="color: green">有效</td>
+                        <td ng-show="warnRule.status" style="color: green">监控中</td>
+                        <td ng-show="!warnRule.status" style="color: red">已告警</td>
+                        <td>
+                            <!--<i title='关闭告警' class="fa chart-icon fa-bell-slash-o" ng-show="warnRule.warning"-->
+                            <!--ng-click="switchWarning(warnRule);"></i>-->
+                            <!--<i title='打开告警' class="fa chart-icon fa-bell-o" ng-hide="warnRule.warning"-->
+                            <!--ng-click="switchWarning(warnRule);"></i>&nbsp;&nbsp;-->
+                            <i title="启用" class="fa chart-icon fa-check-circle-o" ng-show="warnRule.disabled"
+                               ng-click="swithStop(warnRule)"></i>
+                            <i title="停用" class="fa chart-icon fa-ban" ng-hide="warnRule.disabled"
+                               ng-click="swithStop(warnRule)"></i>&nbsp;&nbsp;
+                            <i title="编辑" class="fa  fa-edit chart-icon" ng-click="edit(warnRule);"></i>&nbsp;&nbsp;
+                            <i class="fa fa-trash chart-icon" ng-click="remove(warnRule.id);"></i></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer" ng-show="page.totalPage > 1">
+                <pagination current-page="currentPage" total-page="page.totalPage"
+                            on-select-page="queryByPage(page);"></pagination>
+            </div>
+
+
+            <div class="overlay hide">
+                <i class="fa fa-spinner fa-spin"></i>
+            </div>
+        </div>
+    </div>
+    <div class="width-animate pull-right" ng-class="{'col-md-3':showEdit,'width-0':!showEdit}">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title">规则设置</h3>
+
+                <div class="box-tools">
+                    <i class="fa fa-times" ng-click="changeEdit(false);"></i>
+                </div>
+            </div>
+
+            <div class="box-header with-border">
+                <div class="form-group">
+                    <label class='required-field'>监控名称</label>
+                    <input type="text" class="form-control" placeholder="" ng-model="warnRule.name">
+                </div>
+                <div class="form-group">
+                    <label>描述</label>
+                    <input type="text" class="form-control" placeholder="" ng-model="warnRule.description">
+                </div>
+                <div class="form-group no-margin">
+                    <label class='required-field'>基于查询&nbsp;&nbsp;<a href="#/logqry" ><small class="color-info">去创建新的查询</small></a></label>
+                    <select class='form-control ng-pristine ng-valid ng-touched' ng-model="warnRule.queryField"
+                            ng-change="changeQueryField();">
+                        <option ng-repeat="field in fields" value="{{field.id}}"
+                                ng-selected='warnRule.queryField == field.id'>{{field.name}}
+                        </option>
+                    </select>
+                </div>
+            </div>
+            <div class="box-header with-border">
+                <div class="form-group ">
+                    <label class='required-field'>告警类型</label>
+                    <select class='form-control ng-pristine ng-valid ng-touched' ng-model="warnRule.type"
+                            ng-change="changeWarnType(warnRule.type);">
+                        <option ng-repeat="warnType in warnTypes" value="{{ warnType.value }}"
+                                ng-selected='warnRule.type == warnType.value'>{{ warnType.tooltip }}
+                        </option>
+                    </select>
+                </div>
+                <!-- 对应日志数 -->
+                <div class="form-group no-margin" style='{{ warnTypes[0].css }}'>
+                    <label class='required-field'>触发条件</label><br>
+                    <input type="text" ng-model="warnRule.minutes"
+                           class="form-control ng-pristine ng-valid ng-touched" placeholder=""
+
+                           ng-pattern="/^\d+$/"
+                           style="width: 18%; display: inline-block; margin-right:2%;">
+                    <span style="width: 15%; line-height: 34px;">分钟内，日志数</span>
+                    <select class='form-control ng-pristine ng-valid ng-touched'
+                            style='width:23%;display: inline-block; margin-left:2%; margin-right:2%;vertical-align: bottom;'
+                            ng-model="warnRule.comSymbol">
+                        <option ng-repeat="comSymbol in comSymbols" value="{{ comSymbol.value }}">{{ comSymbol.tooltip
+                            }}
+                        </option>
+                    </select><input type="text"
+                                    class="form-control ng-pristine ng-valid ng-touched" placeholder=""
+
+                                    ng-pattern="/^\d+$/"
+                                    style="width: 18%; display: inline-block; " ng-model="warnRule.peakValue">
+                </div>
+
+                <!-- 字段统计 -->
+                <div class="form-group no-margin" style='{{ warnTypes[1].css }}'>
+                    <label class='required-field'>触发条件</label><br>
+                    <select class='form-control ng-pristine ng-valid ng-touched'
+                            style='width: 40%; display: inline-block; margin-right:2%;' ng-model="warnRule.fieldName">
+                        <option ng-repeat="field in allFields" value="{{ field }}"
+                                ng-selected='warnRule.fieldName == field'>{{ field }}
+                        </option>
+                    </select>
+                    <span
+                            style="width: 15%; line-height: 34px; margin-right:2%;">在
+                </span><input type="text" ng-model="warnRule.minutes"
+                              class="form-control ng-pristine ng-valid ng-touched"
+                              placeholder=""
+
+                              ng-pattern="/^\d+$/"
+                              style="width: 24%; display: inline-block; margin-right:2%;"><span
+                        style="width: 15%; line-height: 34px;">分钟内，</span><br><br>
+                    <select class='form-control ng-pristine ng-valid ng-touched' ng-model="warnRule.dimension"
+                            style='width:40%;display: inline-block; vertical-align: bottom;'>
+                        <option ng-repeat="dimension in dimensions" value="{{ dimension.value }}">{{ dimension.tooltip
+                            }}
+                        </option>
+                    </select><select class='form-control ng-pristine ng-valid ng-touched'
+                                     style='width:24%;display: inline-block; margin-left:2%; margin-right:2%;vertical-align: bottom;'
+                                     ng-model="warnRule.comSymbol">
+                    <option ng-repeat="comSymbol in comSymbols" value="{{ comSymbol.value }}">{{ comSymbol.tooltip }}
+                    </option>
+                </select><input type="text" ng-model="warnRule.peakValue"
+                                ng-pattern="/^\d+$/"
+                                class="form-control ng-pristine ng-valid ng-touched" placeholder=""
+                                style="width: 24%; display: inline-block; ">
+                </div>
+
+
+                <div class="box-header with-border">
+                    <div class="form-group no-margin">
+                        <label>监控频率</label>
+
+                        <div style="padding: 10px;">
+                            <input style="width: 100%;" my-slider="" type="text" data-opts="sliderOpts"
+                                   ng-model="warnRule.frequency"/>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="box-header with-border">
+                    <div class="form-group no-margin">
+                        <label class='required-field'>接收告警邮箱</label>
+                        <input type="email" class="form-control" placeholder=""  ng-pattern="/^(\w)+(\.\w+)*@(\w)+((\.\w+)+)$/" ng-model="warnRule.email">
+                    </div>
+                </div>
+                <div class="box-body">
+                    <button class="btn btn-success " ng-click="saveOrUpdate();"><i class="fa fa-check-circle"></i>&nbsp;&nbsp;确认
+                    </button>
+                    <div my-confirm config="confirmCfg"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

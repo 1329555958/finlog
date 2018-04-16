@@ -1,0 +1,2 @@
+/*! finlog - v0.2.0 - 2017-03-09 Copyright (c) 2017 vfinance; Licensed MIT */
+console.log("demo loaded!!!!"),require("app").register.controller("demoController",function($scope,$timeout){$scope.name="wch",$scope.arr=["_jse","aaa"],$scope.aaaa="2015-12-01 10:10:10",$timeout(function(){$scope.aaaa="2015-11-11 10:10:10"},3e3),$("#datetimepicker12").datetimepicker({inline:!0,format:"YYYY-MM-DD"})});
